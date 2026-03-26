@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservierungen</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Reservierungen</h2>
+    <p><a href="/reservation/add" class="btn btn-primary">Neue Reservierung</a></p>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Gerät</th>
+            <th>Start</th>
+            <th>Ende</th>
+            <th>Region</th>
+            <th>Kommentar</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${reservations}">
+            <td th:text="${r.patient.name}"></td>
+            <td th:text="${r.geraet.bezeichnung}"></td>
+            <td th:text="${r.startTime}"></td>
+            <td th:text="${r.endTime}"></td>
+            <td th:text="${r.region}"></td>
+            <td th:text="${r.comment}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+

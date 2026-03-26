@@ -9,8 +9,13 @@
 <div class="container">
     <h1>Hallo</h1>
     Datum: <span th:text="${today}"></span>
-    <div>
-        <a href="/patient/list">patient list</a>
+    <div class="list-group" style="max-width:300px;">
+        <a href="/patient/list" class="list-group-item">Patientenliste</a>
+        <a href="/patient/add" class="list-group-item">Neuen Patienten anlegen</a>
+        <a href="/geraete/list" class="list-group-item">Geräteliste</a>
+        <a href="/geraete/add" class="list-group-item">Neues Gerät anlegen</a>
+        <a href="/reservation/list" class="list-group-item">Alle Reservierungen</a>
+        <a href="/reservation/add" class="list-group-item">Neue Reservierung</a>
     </div>
 </div>
 </body>

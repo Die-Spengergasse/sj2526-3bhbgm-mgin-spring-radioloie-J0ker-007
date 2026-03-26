@@ -7,16 +7,23 @@
 </head>
 <body>
 <div class="container">
+    <h2>Patienten</h2>
     <table class="table">
         <thead>
             <tr>
-                <th>name</th>
-                <th>birth</th>
+                <th>SVNR</th>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>Geschlecht</th>
+                <th>Geburtsdatum</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="p : ${patients}">
-                <td th:text="${p.name}"></td>
+                <td th:text="${p.ssn}"></td>
+                <td th:text="${p.firstName}"></td>
+                <td th:text="${p.lastName}"></td>
+                <td th:text="${p.gender}"></td>
                 <td th:text="${p.birth}"></td>
             </tr>
         </tbody>
@@ -24,7 +31,7 @@
     </table>
 
     <p>
-        <a href="/patient/add">new patient</a>
+        <a href="/patient/add" class="btn btn-primary">Neuer Patient</a>
     </p>
 </div>
 </body>

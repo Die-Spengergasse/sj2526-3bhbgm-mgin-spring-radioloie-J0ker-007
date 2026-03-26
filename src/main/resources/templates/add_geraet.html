@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Neues Gerät</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Gerät erfassen</h2>
+    <form th:action="@{/geraete/add}" th:object="${geraet}" method="post">
+        <div class="form-group">
+            <label>Bezeichnung</label>
+            <input type="text" th:field="*{bezeichnung}" class="form-control" placeholder="Bezeichnung">
+        </div>
+        <div class="form-group">
+            <label>Art</label>
+            <input type="text" th:field="*{art}" class="form-control" placeholder="z.B. MR, CT">
+        </div>
+        <div class="form-group">
+            <label>Standort</label>
+            <input type="text" th:field="*{standort}" class="form-control" placeholder="Raumnummer">
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="Speichern">
+            <a href="/geraete/list" class="btn btn-default">Abbrechen</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservierungen pro Gerät</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Reservierungen für Gerät: <span th:text="${geraet.bezeichnung}"></span></h2>
+    <p>Typ: <span th:text="${geraet.art}"></span> — Standort: <span th:text="${geraet.standort}"></span></p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Start</th>
+            <th>Ende</th>
+            <th>Region</th>
+            <th>Kommentar</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${reservations}">
+            <td th:text="${r.patient.name}"></td>
+            <td th:text="${r.startTime}"></td>
+            <td th:text="${r.endTime}"></td>
+            <td th:text="${r.region}"></td>
+            <td th:text="${r.comment}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p><a th:href="@{'/reservation/add'}" class="btn btn-primary">Neue Reservierung</a></p>
+</div>
+</body>
+</html>
+

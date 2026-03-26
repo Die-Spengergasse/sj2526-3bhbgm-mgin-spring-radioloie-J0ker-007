@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Geräte</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Geräte</h2>
+    <p><a href="/geraete/add" class="btn btn-primary">Neues Gerät</a></p>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Bezeichnung</th>
+            <th>Art</th>
+            <th>Standort</th>
+            <th>Aktionen</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="g : ${geraete}">
+            <td th:text="${g.id}"></td>
+            <td th:text="${g.bezeichnung}"></td>
+            <td th:text="${g.art}"></td>
+            <td th:text="${g.standort}"></td>
+            <td>
+                <a th:href="@{'/reservation/list/geraet/' + ${g.id}}" class="btn btn-default">Reservierungen</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+
