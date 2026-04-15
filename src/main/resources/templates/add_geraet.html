@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Neues Gerät</title>
@@ -8,6 +8,8 @@
 <body>
 <div class="container">
     <h2>Gerät erfassen</h2>
+
+    <!-- Formular zum Anlegen eines Geräts. th:object bindet das Modell-attribut 'geraet'. -->
     <form th:action="@{/geraete/add}" th:object="${geraet}" method="post">
         <div class="form-group">
             <label>Bezeichnung</label>
@@ -23,10 +25,17 @@
         </div>
         <div class="form-group">
             <input type="submit" class="btn btn-primary" value="Speichern">
-            <a href="/geraete/list" class="btn btn-default">Abbrechen</a>
+            <a th:href="@{/geraete/list}" class="btn btn-default">Abbrechen</a>
         </div>
     </form>
+
+    <!-- Link-Liste untereinander (z.B. für Navigation) -->
+    <div class="list-group" style="margin-top:20px;">
+        <a th:href="@{/geraete/add}" class="list-group-item">Gerät erfassen</a>
+        <a th:href="@{/geraete/list}" class="list-group-item">Geräte-Liste</a>
+        <a th:href="@{/reservation/add}" class="list-group-item">Neue Reservierung</a>
+        <a th:href="@{/reservation/list}" class="list-group-item">Reservierungen</a>
+    </div>
 </div>
 </body>
 </html>
-

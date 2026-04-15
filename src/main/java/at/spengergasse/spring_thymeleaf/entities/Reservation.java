@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * Entity für eine Reservierung (Untersuchungstermin auf einem Gerät)
@@ -26,9 +27,13 @@ public class Reservation {
     private Geraete geraet;
 
     // Start- und Endzeit der Reservierung
+    // Anmerkung: input type="datetime-local" liefert Werte im Format yyyy-MM-dd'T'HH:mm
+    // Die @DateTimeFormat Annotation hilft Spring dabei, Strings korrekt in LocalDateTime zu konvertieren.
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime startTime;
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime endTime;
 
     // Untersuchungregion (z.B. Kopf, Thorax)

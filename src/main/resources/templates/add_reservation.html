@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de" xmlns:th="http://www.w3.org/1999/html" xmlns:sec="http://www.thymeleaf.org">
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Reservierung erfassen</title>
@@ -9,40 +9,37 @@
 <div class="container">
     <h2>Reservierung erfassen</h2>
 
-    <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
-        <p th:each="err : ${#fields.errors('*')}" th:text="${err}"></p>
-    </div>
-
-    <form th:action="@{/reservation/add}" th:object="${reservation}" method="post">
-        <div class="form-group" th:classappend="${#fields.hasErrors('patient')}? 'has-error'">
+    <!-- Einfaches HTML-Formular ohne th:object oder nested binding um Fehler zu vermeiden -->
+    <form action="/reservation/add" method="post">
+        <div class="form-group">
             <label>Patient</label>
-            <select th:field="*{patient.id}" class="form-control">
+            <select name="patientId" class="form-control">
                 <option value="">-- wählen --</option>
-                <option th:each="p : ${patients}" th:value="${p.id}" th:text="${p.firstName + ' ' + p.lastName + ' (' + p.ssn + ')'}"></option>
+                <option th:each="p : ${patients}" th:value="${p.id}" th:text="${(p.firstName ?: '') + ' ' + (p.lastName ?: '')}"></option>
             </select>
         </div>
-        <div class="form-group" th:classappend="${#fields.hasErrors('geraet')}? 'has-error'">
+        <div class="form-group">
             <label>Gerät</label>
-            <select th:field="*{geraet.id}" class="form-control">
+            <select name="geraeteId" class="form-control">
                 <option value="">-- wählen --</option>
-                <option th:each="g : ${geraete}" th:value="${g.id}" th:text="${g.bezeichnung + ' - ' + g.art + ' (' + g.standort + ')'}"></option>
+                <option th:each="g : ${geraete}" th:value="${g.id}" th:text="${g.bezeichnung}"></option>
             </select>
         </div>
-        <div class="form-group" th:classappend="${#fields.hasErrors('startTime')}? 'has-error'">
+        <div class="form-group">
             <label>Startzeit</label>
-            <input type="datetime-local" th:field="*{startTime}" class="form-control"/>
+            <input type="datetime-local" name="startTime" class="form-control"/>
         </div>
-        <div class="form-group" th:classappend="${#fields.hasErrors('endTime')}? 'has-error'">
+        <div class="form-group">
             <label>Endzeit</label>
-            <input type="datetime-local" th:field="*{endTime}" class="form-control"/>
+            <input type="datetime-local" name="endTime" class="form-control"/>
         </div>
         <div class="form-group">
             <label>Körperregion</label>
-            <input type="text" th:field="*{region}" class="form-control" placeholder="z.B. Kopf, Thorax">
+            <input type="text" name="region" class="form-control"/>
         </div>
         <div class="form-group">
             <label>Kommentar</label>
-            <textarea th:field="*{comment}" class="form-control"></textarea>
+            <textarea name="comment" class="form-control"></textarea>
         </div>
         <div class="form-group">
             <input type="submit" class="btn btn-primary" value="Speichern">
@@ -52,3 +49,4 @@
 </div>
 </body>
 </html>
+
