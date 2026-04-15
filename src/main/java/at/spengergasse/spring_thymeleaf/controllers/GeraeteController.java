@@ -58,28 +58,4 @@ public class GeraeteController {
         return "redirect:/geraete/list"; // Redirect zu /geraete/list nach erfolgreichem Speichern
     }
 
-    /**
-     * GET /geraete/edit - Platzhalter zum Bearbeiten eines Geräts (nicht implementiert)
-     */
-    @RequestMapping("/edit")
-    public String edit() {
-        return "edit_geraet";
-    }
-
-    /**
-     * GET /geraete/delete - Platzhalter zum Löschen eines Geräts (nicht implementiert)
-     */
-    @RequestMapping("/delete")
-    public String delete() {
-        return "delete_geraet";
-    }
-
-    /**
-     * GET /geraete/details - Platzhalter zur Anzeige von Gerät-Details (nicht implementiert)
-     */
-    @RequestMapping("/details")
-    public String details() {
-        return "getdetails";
-    }
-
 }

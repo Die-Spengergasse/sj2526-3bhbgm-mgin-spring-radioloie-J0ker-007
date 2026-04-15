@@ -155,20 +155,5 @@ public class ReservationController {
         }
     }
 
-    // Platzhalter-Handler für Edit/Delete/Details — noch nicht implementiert
-    @RequestMapping("/edit")
-    public String edit() {
-        return "edit_reservation";
-    }
-
-    @RequestMapping("/delete")
-    public String delete() {
-        return "delete_reservation";
-    }
-
-    @RequestMapping("/details")
-    public String details() {
-        return "resdetails";
-    }
 
 }
