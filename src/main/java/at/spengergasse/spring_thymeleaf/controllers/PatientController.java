@@ -24,7 +24,7 @@ public class PatientController {
             model.addAttribute("patients", patientRepository.findAll());
             return "patlist";
         } catch (TransactionException ex) {
-            model.addAttribute("message", "🔴 Datenbankfehler: Die Patientenliste konnte nicht geladen werden. Bitte prüfen Sie, ob MySQL läuft.");
+            model.addAttribute("message", "Datenbankfehler: Die Patientenliste konnte nicht geladen werden. Bitte prüfen Sie, ob MySQL läuft.");
             return "error";
         }
     }
@@ -40,7 +40,7 @@ public class PatientController {
         try {
             // Validiere die Eingaben (BindingResult)
             if (bindingResult.hasErrors()) {
-                model.addAttribute("message", "⚠️ Validierungsfehler: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
+                model.addAttribute("message", "Validierungsfehler: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
                 return "error";
             }
 
@@ -55,13 +55,13 @@ public class PatientController {
             if (errorMessage == null || errorMessage.isEmpty()) {
                 errorMessage = "Ein Validierungsfehler ist aufgetreten";
             }
-            model.addAttribute("message", "⚠️ Validierungsfehler: " + errorMessage);
+            model.addAttribute("message", "Validierungsfehler: " + errorMessage);
             System.out.println("IllegalArgumentException abgefangen: " + errorMessage);
             return "error";
 
         } catch (TransactionException ex) {
             // Datenbankverbindungsfehler
-            model.addAttribute("message", "🔴 Datenbankfehler: Der Patient konnte nicht gespeichert werden. Bitte prüfen Sie, ob MySQL läuft.");
+            model.addAttribute("message", "Datenbankfehler: Der Patient konnte nicht gespeichert werden. Bitte prüfen Sie, ob MySQL läuft.");
             return "error";
 
         } catch (Exception ex) {
@@ -70,7 +70,7 @@ public class PatientController {
             if (errorMessage == null || errorMessage.isEmpty()) {
                 errorMessage = "Ein unbekannter Fehler ist aufgetreten";
             }
-            model.addAttribute("message", "❌ Ein unerwarteter Fehler ist aufgetreten: " + errorMessage);
+            model.addAttribute("message", "Ein unerwarteter Fehler ist aufgetreten: " + errorMessage);
             System.err.println("Fehler beim Speichern des Patienten: " + ex.getClass().getName() + " - " + errorMessage);
             ex.printStackTrace();
             return "error";
@@ -84,7 +84,7 @@ public class PatientController {
         if (errorMessage == null || errorMessage.isEmpty()) {
             errorMessage = "Ein Validierungsfehler ist aufgetreten";
         }
-        model.addAttribute("message", "⚠️ Validierungsfehler: " + errorMessage);
+        model.addAttribute("message", "Validierungsfehler: " + errorMessage);
         System.out.println("IllegalArgumentException Handler: " + errorMessage);
         return "error";
     }
@@ -92,7 +92,7 @@ public class PatientController {
     @ExceptionHandler(TransactionException.class)
     public String handleTransactionException(TransactionException ex, Model model) {
         // Datenbankverbindungsfehler
-        model.addAttribute("message", "🔴 Datenbankfehler: Der Datenbankzugriff funktioniert nicht. Bitte prüfen Sie, ob MySQL läuft.");
+        model.addAttribute("message", "Datenbankfehler: Der Datenbankzugriff funktioniert nicht. Bitte prüfen Sie, ob MySQL läuft.");
         return "error";
     }
 
@@ -106,11 +106,11 @@ public class PatientController {
 
         // Überprüfe auf spezifische Exception-Typen
         if (ex instanceof IllegalArgumentException) {
-            model.addAttribute("message", "⚠️ Validierungsfehler: " + errorMessage);
+            model.addAttribute("message", "Validierungsfehler: " + errorMessage);
         } else if (ex instanceof TransactionException) {
-            model.addAttribute("message", "🔴 Datenbankfehler: Der Datenbankzugriff funktioniert nicht. Bitte prüfen Sie, ob MySQL läuft.");
+            model.addAttribute("message", "Datenbankfehler: Der Datenbankzugriff funktioniert nicht. Bitte prüfen Sie, ob MySQL läuft.");
         } else {
-            model.addAttribute("message", "❌ Ein unerwarteter Fehler ist aufgetreten: " + errorMessage);
+            model.addAttribute("message", "Ein unerwarteter Fehler ist aufgetreten: " + errorMessage);
         }
 
         System.err.println("Exception Handler: " + ex.getClass().getName() + " - " + errorMessage);

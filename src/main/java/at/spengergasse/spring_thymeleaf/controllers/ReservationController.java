@@ -126,15 +126,15 @@ public class ReservationController {
     public String handleException(Exception ex, Model model) {
         // Prüfe auf Datenbankverbindungsfehler
         if (ex instanceof TransactionException) {
-            model.addAttribute("message", "🔴 Datenbankfehler: Die Datenbankverbindung konnte nicht hergestellt werden. Bitte prüfen Sie, ob MySQL läuft.");
+            model.addAttribute("message", "Datenbankfehler: Die Datenbankverbindung konnte nicht hergestellt werden. Bitte prüfen Sie, ob MySQL läuft.");
         }
         // Prüfe auf IllegalArgumentException (Validierungsfehler)
         else if (ex instanceof IllegalArgumentException) {
-            model.addAttribute("message", "⚠️ Validierungsfehler: " + ex.getMessage());
+            model.addAttribute("message", "Validierungsfehler: " + ex.getMessage());
         }
         // Alle anderen Fehler
         else {
-            model.addAttribute("message", "❌ Ein Fehler ist aufgetreten: " + ex.getMessage());
+            model.addAttribute("message", "Ein Fehler ist aufgetreten: " + ex.getMessage());
         }
         return "error";
     }
