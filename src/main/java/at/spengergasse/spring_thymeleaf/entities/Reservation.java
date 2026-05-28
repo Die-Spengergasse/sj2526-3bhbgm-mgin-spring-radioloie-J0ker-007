@@ -74,6 +74,12 @@ public class Reservation {
     }
 
     public void setStartTime(LocalDateTime startTime) {
+        if (endTime != null && startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Die Startzeit darf nicht nach der Endzeit liegen.");
+        }
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Die Startzeit darf nicht in der Vergangenheit liegen.");
+        }
         this.startTime = startTime;
     }
 

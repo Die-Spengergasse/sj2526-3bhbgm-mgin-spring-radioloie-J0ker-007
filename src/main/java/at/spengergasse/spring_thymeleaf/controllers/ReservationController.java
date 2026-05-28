@@ -1,159 +1,141 @@
 package at.spengergasse.spring_thymeleaf.controllers;
 
 import at.spengergasse.spring_thymeleaf.entities.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionException;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Controller für Reservierungen.
- * Behandelt Anzeigen der Liste, Formular zum Anlegen und die Erstellung (mit Validierung).
- */
 @Controller
 @RequestMapping("/reservation")
 public class ReservationController {
-    private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
 
     private final ReservationRepository reservationRepository;
-    private final PatientRepository patientRepository;
     private final GeraeteRepository geraeteRepository;
+    private final PatientRepository patientRepository;
 
-    public ReservationController(ReservationRepository reservationRepository, PatientRepository patientRepository, GeraeteRepository geraeteRepository) {
+    public ReservationController(ReservationRepository reservationRepository,
+                                 GeraeteRepository geraeteRepository,
+                                 PatientRepository patientRepository) {
         this.reservationRepository = reservationRepository;
-        this.patientRepository = patientRepository;
         this.geraeteRepository = geraeteRepository;
+        this.patientRepository = patientRepository;
     }
 
-    /**
-     * Zeigt alle Reservierungen an.
-     */
+    @GetMapping("/add")
+    public String add(Model model) {
+        model.addAttribute("reservation", new Reservation());
+        model.addAttribute("geraete", geraeteRepository.findAll());
+        model.addAttribute("patients", patientRepository.findAll());
+        return "add_reservation";
+    }
+
+    @PostMapping("/add")
+    public String add(@ModelAttribute("reservation") Reservation reservation,
+                      @RequestParam int patientId,
+                      @RequestParam int geraeteId,
+                      BindingResult result) throws Exception {
+        try {
+            // Validiere Binding Errors
+            if (result.hasErrors()) {
+                throw new Exception("Fehler bei der Eingabevalidierung: " + result.getAllErrors().get(0).getDefaultMessage());
+            }
+
+            // Hole Start- und Endzeit aus der Reservierung
+            LocalDateTime newStart = reservation.getStartTime();
+            LocalDateTime newEnd = reservation.getEndTime();
+
+            // Validiere, dass Startzeit nicht nach Endzeit liegt
+            if (newStart != null && newEnd != null && newStart.isAfter(newEnd)) {
+                throw new IllegalArgumentException("Die Startzeit darf nicht nach der Endzeit liegen.");
+            }
+
+            // Validiere, dass Termin nicht in Vergangenheit liegt
+            if (newStart != null && newStart.isBefore(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Ein Termin in der Vergangenheit darf nicht reserviert werden.");
+            }
+
+            // Prüfe auf Überschneidungen für den Patienten
+            List<Reservation> patientReservations = reservationRepository.findByPatientId(patientId);
+            for (Reservation r : patientReservations) {
+                LocalDateTime existingStart = r.getStartTime();
+                LocalDateTime existingEnd = r.getEndTime();
+
+                if (newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart)) {
+                    throw new IllegalArgumentException("Ein Patient kann nicht zur gleichen Zeit mehrere Termine haben. Es gibt bereits eine Reservierung in diesem Zeitfenster.");
+                }
+            }
+
+            // Hole den Patienten aus der Datenbank
+            Patient patient = patientRepository.findById(patientId)
+                    .orElseThrow(() -> new IllegalArgumentException("Der gewählte Patient existiert nicht."));
+
+            // Prüfe auf Überschneidungen für das Gerät
+            List<Reservation> geraeteReservations = reservationRepository.findByGeraetId(geraeteId);
+            for (Reservation r : geraeteReservations) {
+                LocalDateTime existingStart = r.getStartTime();
+                LocalDateTime existingEnd = r.getEndTime();
+
+                if (newStart.isBefore(existingEnd) && newEnd.isAfter(existingStart)) {
+                    throw new IllegalArgumentException("Das Gerät ist zur gleichen Zeit bereits reserviert. Es gibt bereits einen Termin in diesem Zeitfenster.");
+                }
+            }
+
+            // Hole das Gerät aus der Datenbank
+            Geraete geraete = geraeteRepository.findById(geraeteId)
+                    .orElseThrow(() -> new IllegalArgumentException("Das gewählte Gerät existiert nicht."));
+
+            // Setze die Zuordnungen und speichere
+            reservation.setPatient(patient);
+            reservation.setGeraet(geraete);
+
+            reservationRepository.save(reservation);
+
+            return "redirect:/reservation/list";
+        } catch (TransactionException ex) {
+            // Datenbankverbindungsfehler
+            throw ex;
+        } catch (IllegalArgumentException ex) {
+            // Validierungsfehler
+            throw ex;
+        }
+    }
+
     @GetMapping("/list")
     public String list(Model model) {
         model.addAttribute("reservations", reservationRepository.findAll());
+        model.addAttribute("geraete", geraeteRepository.findAll());
         return "reslist";
     }
 
-    /**
-     * Zeigt Reservierungen für ein bestimmtes Gerät (nach id).
-     */
-    @GetMapping("/list/geraet/{id}")
-    public String listByGeraet(@PathVariable("id") int id, Model model) {
-        model.addAttribute("reservations", reservationRepository.findByGeraetId(id));
-        geraeteRepository.findById(id).ifPresent(g -> model.addAttribute("geraet", g));
+    @GetMapping("/listmachine")
+    public String listmachine(@RequestParam int geraeteId, Model model) {
+
+        List<Reservation> reservations = reservationRepository.findByGeraetId(geraeteId);
+
+        model.addAttribute("reservations", reservations);
+
         return "reslist_by_geraet";
     }
 
-    /**
-     * GET-Handler zum Anzeigen des Formulars zum Anlegen einer Reservierung.
-     * Wir initialisieren `reservation.patient` und `reservation.geraet`, damit Thymeleaf
-     * die gebundenen Felder `patient.id` und `geraet.id` ohne NullPointer rendern kann.
-     */
-    @GetMapping("/add")
-    public String add(Model model) {
-        try {
-            log.info("Loading reservation form");
-            Reservation reservation = new Reservation();
-            // wichtige Initialisierung für Nested-Binding in Thymeleaf (patient.id, geraet.id)
-            reservation.setPatient(new Patient());
-            reservation.setGeraet(new Geraete());
-            model.addAttribute("reservation", reservation);
-
-            log.debug("Fetching patients");
-            model.addAttribute("patients", patientRepository.findAll());
-
-            log.debug("Fetching geraete");
-            model.addAttribute("geraete", geraeteRepository.findAll());
-
-            log.info("Reservation form loaded successfully");
-            return "add_reservation";
-        } catch (Exception e) {
-            log.error("Error loading reservation form", e);
-            throw new RuntimeException("Failed to load reservation form: " + e.getMessage(), e);
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception ex, Model model) {
+        // Prüfe auf Datenbankverbindungsfehler
+        if (ex instanceof TransactionException) {
+            model.addAttribute("message", "🔴 Datenbankfehler: Die Datenbankverbindung konnte nicht hergestellt werden. Bitte prüfen Sie, ob MySQL läuft.");
         }
-    }
-
-    /**
-     * POST-Handler zum Speichern einer neuen Reservierung.
-     * Empfängt einfache Form-Parameter: patientId, geraeteId, startTime, endTime, region, comment
-     */
-    @PostMapping("/add")
-    public String addPost(
-            @RequestParam(required = false) Integer patientId,
-            @RequestParam(required = false) Integer geraeteId,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime,
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String comment,
-            Model model) {
-        try {
-            log.debug("Creating reservation: patientId={}, geraeteId={}, startTime={}, endTime={}",
-                    patientId, geraeteId, startTime, endTime);
-
-            // Validierung
-            if (patientId == null || patientId <= 0) {
-                model.addAttribute("error", "Bitte einen Patienten auswählen.");
-                model.addAttribute("patients", patientRepository.findAll());
-                model.addAttribute("geraete", geraeteRepository.findAll());
-                return "add_reservation";
-            }
-            if (geraeteId == null || geraeteId <= 0) {
-                model.addAttribute("error", "Bitte ein Gerät auswählen.");
-                model.addAttribute("patients", patientRepository.findAll());
-                model.addAttribute("geraete", geraeteRepository.findAll());
-                return "add_reservation";
-            }
-
-            // Lade Patient und Gerät aus Datenbank
-            Patient patient = patientRepository.findById(patientId).orElse(null);
-            Geraete geraete = geraeteRepository.findById(geraeteId).orElse(null);
-
-            if (patient == null || geraete == null) {
-                model.addAttribute("error", "Patient oder Gerät nicht gefunden.");
-                model.addAttribute("patients", patientRepository.findAll());
-                model.addAttribute("geraete", geraeteRepository.findAll());
-                return "add_reservation";
-            }
-
-            // Erstelle Reservierung
-            Reservation reservation = new Reservation();
-            reservation.setPatient(patient);
-            reservation.setGeraet(geraete);
-            reservation.setRegion(region);
-            reservation.setComment(comment);
-
-            // Parse DateTime strings (format: yyyy-MM-ddTHH:mm from HTML5 datetime-local)
-            if (startTime != null && !startTime.isEmpty()) {
-                reservation.setStartTime(LocalDateTime.parse(startTime));
-            }
-            if (endTime != null && !endTime.isEmpty()) {
-                reservation.setEndTime(LocalDateTime.parse(endTime));
-            }
-
-            // Speichern
-            reservationRepository.save(reservation);
-            log.info("Reservation created successfully: {}", reservation.getId());
-            return "redirect:/reservation/list";
-
-        } catch (Exception e) {
-            log.error("Error creating reservation", e);
-            model.addAttribute("error", "Fehler beim Erstellen der Reservierung: " + e.getMessage());
-            model.addAttribute("patients", patientRepository.findAll());
-            model.addAttribute("geraete", geraeteRepository.findAll());
-            return "add_reservation";
+        // Prüfe auf IllegalArgumentException (Validierungsfehler)
+        else if (ex instanceof IllegalArgumentException) {
+            model.addAttribute("message", "⚠️ Validierungsfehler: " + ex.getMessage());
         }
+        // Alle anderen Fehler
+        else {
+            model.addAttribute("message", "❌ Ein Fehler ist aufgetreten: " + ex.getMessage());
+        }
+        return "error";
     }
-
-
 }

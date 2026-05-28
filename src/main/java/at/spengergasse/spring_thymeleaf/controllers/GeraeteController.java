@@ -3,11 +3,9 @@ package at.spengergasse.spring_thymeleaf.controllers;
 import at.spengergasse.spring_thymeleaf.entities.Geraete;
 import at.spengergasse.spring_thymeleaf.entities.GeraeteRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionException;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller für Gerät-Verwaltung (Medizinische Geräte wie MR, CT etc.)
@@ -33,8 +31,13 @@ public class GeraeteController {
      */
     @GetMapping("/list")
     public String list(Model model) {
-        model.addAttribute("geraete", geraeteRepository.findAll());
-        return "gerlist"; // Render template: gerlist.html
+        try {
+            model.addAttribute("geraete", geraeteRepository.findAll());
+            return "gerlist"; // Render template: gerlist.html
+        } catch (TransactionException ex) {
+            model.addAttribute("message", "🔴 Datenbankfehler: Die Geräteliste konnte nicht geladen werden. Bitte prüfen Sie, ob MySQL läuft.");
+            return "error";
+        }
     }
 
     /**
@@ -53,9 +56,48 @@ public class GeraeteController {
      * Nach dem Speichern: Redirect zur Liste (/geraete/list)
      */
     @PostMapping("/add")
-    public String addPost(@ModelAttribute("geraet") Geraete geraet) {
-        geraeteRepository.save(geraet); // Speichere in DB
-        return "redirect:/geraete/list"; // Redirect zu /geraete/list nach erfolgreichem Speichern
+    public String addPost(@ModelAttribute("geraet") Geraete geraet, Model model) {
+        try {
+            geraeteRepository.save(geraet); // Speichere in DB
+            return "redirect:/geraete/list"; // Redirect zu /geraete/list nach erfolgreichem Speichern
+
+        } catch (IllegalArgumentException ex) {
+            // Fehler aus den Settern
+            model.addAttribute("message", "⚠️ Validierungsfehler: " + ex.getMessage());
+            model.addAttribute("geraet", geraet);
+            return "error";
+
+        } catch (TransactionException ex) {
+            // Datenbankverbindungsfehler
+            model.addAttribute("message", "🔴 Datenbankfehler: Das Gerät konnte nicht gespeichert werden. Bitte prüfen Sie, ob MySQL läuft.");
+            model.addAttribute("geraet", geraet);
+            return "error";
+
+        } catch (Exception ex) {
+            // Andere Fehler
+            model.addAttribute("message", "❌ Ein unerwarteter Fehler ist aufgetreten: " + ex.getMessage());
+            model.addAttribute("geraet", geraet);
+            System.err.println("Fehler beim Speichern des Geräts: " + ex.getMessage());
+            ex.printStackTrace();
+            return "error";
+        }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception ex, Model model) {
+        // Datenbankverbindungsfehler
+        if (ex instanceof TransactionException) {
+            model.addAttribute("message", "🔴 Datenbankfehler: Der Datenbankzugriff funktioniert nicht. Bitte prüfen Sie, ob MySQL läuft.");
+        }
+        // Validierungsfehler
+        else if (ex instanceof IllegalArgumentException) {
+            model.addAttribute("message", "⚠️ Validierungsfehler: " + ex.getMessage());
+        }
+        // Alle anderen Fehler
+        else {
+            model.addAttribute("message", "❌ Ein Fehler ist aufgetreten: " + ex.getMessage());
+        }
+        return "error";
     }
 
 }

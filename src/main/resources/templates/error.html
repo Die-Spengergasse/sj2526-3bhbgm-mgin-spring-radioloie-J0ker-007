@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fehler</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container" style="margin-top: 20px;">
+        <div th:text="${message ? message : 'Ein unbekannter Fehler ist aufgetreten.'}">
+            Fehlermeldung
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="/" class="btn btn-primary">
+                <span class="glyphicon glyphicon-home"></span> Zur Startseite
+            </a>
+            <a href="javascript:history.back()" class="btn btn-default">
+                <span class="glyphicon glyphicon-chevron-left"></span> Zurück
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -42,6 +42,9 @@ public class Patient {
     }
 
     public void setSsn(String ssn) {
+        if (ssn == null || !ssn.matches("\\d{10}")) {
+            throw new IllegalArgumentException("Die Sozialversicherungsnummer muss genau 10 Ziffern enthalten --> ungültige SVNR wurde eingegeben");
+        }
         this.ssn = ssn;
     }
 
@@ -50,6 +53,11 @@ public class Patient {
     }
 
     public void setFirstName(String firstName) {
+
+        if (firstName.equalsIgnoreCase("admin"))
+        {
+            throw new IllegalArgumentException("Der Vorname darf nicht 'admin' sein.");
+        }
         this.firstName = firstName;
     }
 
@@ -58,6 +66,10 @@ public class Patient {
     }
 
     public void setLastName(String lastName) {
+        if (lastName.equalsIgnoreCase("admin"))
+        {
+            throw new IllegalArgumentException("Der Nachname darf nicht 'admin' sein.");
+        }
         this.lastName = lastName;
     }
 
@@ -73,7 +85,11 @@ public class Patient {
         return birth;
     }
 
-    public void setBirth(LocalDate birth) {
+    public void setBirth(LocalDate birth)
+    {
+        if (birth.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Das Geburtsdatum darf nicht in der Zukunft liegen.");
+        }
         this.birth = birth;
     }
 
