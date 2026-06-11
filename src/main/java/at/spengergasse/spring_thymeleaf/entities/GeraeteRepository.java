@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GeraeteRepository extends JpaRepository<Geraete, Integer> {
+        public Geraete findById(int id);
 }

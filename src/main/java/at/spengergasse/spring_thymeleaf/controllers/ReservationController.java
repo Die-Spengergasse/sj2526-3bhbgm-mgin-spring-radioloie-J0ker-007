@@ -39,13 +39,13 @@ public class ReservationController {
                       @RequestParam int patientId,
                       @RequestParam int geraeteId,
                       BindingResult result) throws Exception {
-        try {
+
             // Validiere Binding Errors
             if (result.hasErrors()) {
-                throw new Exception("Fehler bei der Eingabevalidierung: " + result.getAllErrors().get(0).getDefaultMessage());
+                throw new Exception(result.getAllErrors().get(0).getDefaultMessage());
             }
 
-            // Hole Start- und Endzeit aus der Reservierung
+            List<Reservation> existingReservations = reservationRepository.findByPatientId(patientId);
             LocalDateTime newStart = reservation.getStartTime();
             LocalDateTime newEnd = reservation.getEndTime();
 
@@ -70,12 +70,9 @@ public class ReservationController {
                 }
             }
 
-            // Hole den Patienten aus der Datenbank
-            Patient patient = patientRepository.findById(patientId)
-                    .orElseThrow(() -> new IllegalArgumentException("Der gewählte Patient existiert nicht."));
-
-            // Prüfe auf Überschneidungen für das Gerät
+            Patient patient = patientRepository.findById(patientId);
             List<Reservation> geraeteReservations = reservationRepository.findByGeraetId(geraeteId);
+
             for (Reservation r : geraeteReservations) {
                 LocalDateTime existingStart = r.getStartTime();
                 LocalDateTime existingEnd = r.getEndTime();
@@ -85,24 +82,15 @@ public class ReservationController {
                 }
             }
 
-            // Hole das Gerät aus der Datenbank
-            Geraete geraete = geraeteRepository.findById(geraeteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Das gewählte Gerät existiert nicht."));
+            Geraete geraete = geraeteRepository.findById(geraeteId);
 
-            // Setze die Zuordnungen und speichere
             reservation.setPatient(patient);
             reservation.setGeraet(geraete);
 
             reservationRepository.save(reservation);
 
             return "redirect:/reservation/list";
-        } catch (TransactionException ex) {
-            // Datenbankverbindungsfehler
-            throw ex;
-        } catch (IllegalArgumentException ex) {
-            // Validierungsfehler
-            throw ex;
-        }
+
     }
 
     @GetMapping("/list")
@@ -124,17 +112,10 @@ public class ReservationController {
 
     @ExceptionHandler(Exception.class)
     public String handleException(Exception ex, Model model) {
-        // Prüfe auf Datenbankverbindungsfehler
         if (ex instanceof TransactionException) {
-            model.addAttribute("message", "Datenbankfehler: Die Datenbankverbindung konnte nicht hergestellt werden. Bitte prüfen Sie, ob MySQL läuft.");
-        }
-        // Prüfe auf IllegalArgumentException (Validierungsfehler)
-        else if (ex instanceof IllegalArgumentException) {
+            model.addAttribute("message", "Datenbankfehler: Der Datenbankzugriff funktioniert nicht.");
+        } else if (ex instanceof IllegalArgumentException) {
             model.addAttribute("message", "Validierungsfehler: " + ex.getMessage());
-        }
-        // Alle anderen Fehler
-        else {
-            model.addAttribute("message", "Ein Fehler ist aufgetreten: " + ex.getMessage());
         }
         return "error";
     }
